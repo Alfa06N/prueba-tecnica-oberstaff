@@ -54,3 +54,17 @@ If you get a permission denied error, ensure you are running the commands with `
 ```bash
 sudo docker compose up --build
 ```
+
+### 2 Connection to Exchanges
+
+The Ingestor service requires an active internet connection to reach Binance and Kraken WebSockets. If you see connection errors in the logs, verify your firewall or proxy settings.
+
+### 3.Ports Availability
+
+This project uses the following ports. Make sure they are not being used by other services:
+
+- **3000**: Dashboard Web UI
+
+- **6379**: Redis
+
+- **5555**: ZeroMQ (Internal)
