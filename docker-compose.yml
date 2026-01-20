@@ -1,0 +1,58 @@
+services:
+  # 1. DB in memory
+  redis:
+    image: redis:alpine
+    container_name: arbitrage-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "6379:6379"
+    networks:
+      - arbitrage-network
+
+    # 2. Data ingestor (Node.js)
+  ingestor:
+    build: ./ingestor
+    container_name: arbitrage-ingestor
+    environment:
+      - ZMQ_PORT=5555
+    depends_on:
+      - redis
+    networks:
+      - arbitrage-network
+
+  # 3. Engine (Python)
+  engine:
+    build: ./engine
+    container_name: arbitrage-engine
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
+      - ZMQ_URI=tcp://ingestor:5555
+    depends_on:
+      redis:
+        condition: service_healthy
+      ingestor:
+        condition: service_started
+    networks:
+      - arbitrage-network
+
+  # 4. Dashboard
+  dashboard:
+    build: ./dashboard
+    container_name: arbitrage-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    networks:
+      - arbitrage-network
+
+networks:
+  arbitrage-network:
+    driver: bridge

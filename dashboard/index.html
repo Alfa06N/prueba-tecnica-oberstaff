@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Crypto Arbitrage Sniper</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --accent: #38bdf8;
+        --success: #22c55e;
+        --text-muted: #94a3b8;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .dashboard {
+        margin-top: 60px;
+        width: 90%;
+        max-width: 500px;
+        text-align: center;
+      }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: #334155;
+        font-size: 0.9em;
+        margin-bottom: 20px;
+        border: 1px solid #475569;
+      }
+      .dot {
+        height: 8px;
+        width: 8px;
+        background-color: var(--text-muted);
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 10px;
+      }
+      .dot.active {
+        background-color: var(--success);
+        box-shadow: 0 0 10px var(--success);
+        animation: pulse 1.5s infinite;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid #334155;
+        position: relative;
+        overflow: hidden;
+      }
+      .spread-value {
+        font-size: 4em;
+        font-weight: 800;
+        color: var(--success);
+        margin: 10px 0;
+      }
+      .info {
+        color: var(--text-muted);
+        font-size: 1em;
+        line-height: 1.6;
+      }
+      #loader {
+        padding: 40px 0;
+        color: var(--text-muted);
+      }
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top: 3px solid var(--accent);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <div class="status-badge">
+        <span
+          id="status-dot"
+          class="dot active"></span>
+        <span id="status-text">Escaneando Binance & Kraken...</span>
+      </div>
+
+      <div class="card">
+        <div id="view-waiting">
+          <div class="spinner"></div>
+          <div class="info">Esperando spread > 0.1%</div>
+        </div>
+
+        <div
+          id="view-results"
+          style="display: none">
+          <div
+            class="info"
+            id="direction-text">
+            ---
+          </div>
+          <div
+            class="spread-value"
+            id="spread-val">
+            0.00%
+          </div>
+          <div class="info">
+            Binance: <strong id="b-price">0</strong> <br />
+            Kraken: <strong id="k-price">0</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const socket = io();
+      const vWaiting = document.getElementById("view-waiting");
+      const vResults = document.getElementById("view-results");
+      const sText = document.getElementById("status-text");
+
+      socket.on("arbitrage_event", (data) => {
+        vResults.style.opacity = "1";
+        vWaiting.style.display = "none";
+        vResults.style.display = "block";
+        sText.innerText = "¡Opportunity Found!";
+        sText.style.color = "#22c55e";
+        document.getElementById("spread-val").innerText = data.spread + "%";
+        document.getElementById("direction-text").innerText = data.direction;
+        document.getElementById("b-price").innerText = data.binance;
+        document.getElementById("k-price").innerText = data.kraken;
+        clearTimeout(window.resetTimer);
+        window.resetTimer = setTimeout(() => {
+          vResults.style.opacity = "0.5";
+          sText.innerText =
+            "Scanning Binance & Kraken for new opportunities...";
+          sText.style.color = "";
+        }, 4000);
+      });
+    </script>
+  </body>
+</html>
