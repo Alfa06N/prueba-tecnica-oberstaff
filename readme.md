@@ -6,16 +6,16 @@ A high-frequency trading (HFT) engine designed to detect real-time arbitrage opp
 
 The system is built with a focus on low latency, scalability, and asynchronous data processing:
 
-1.  **Ingestor (Node.js + TypeScript)** 
+1.  **Ingestor (Node.js + TypeScript)**
 
 - **WebSocket Management:** Implements a robust Heartbeat & Auto-reconnect logic. If a connection to Binance or Kraken drops, the ingestor triggers an exponential backoff strategy to restore the stream without manual intervention.
 - **Asynchronous Processing:** Uses a non-blocking queue to handle "backpressure," ensuring that bursts of market volatility don't saturate the event loop.
 
-2.  **Transport Layer (ZeroMQ):** 
+2.  **Transport Layer (ZeroMQ):**
 
 - **Brokerless Communication:** Utilizes a PUSH/PULL pattern via ZeroMQ for Inter-Process Communication (IPC). This removes the overhead of a message broker, allowing Node.js to stream raw market data to Python at near-memory speeds.
 
-3.  **Engine (Python 3.11 + uvloop):** 
+3.  **Engine (Python 3.11 + uvloop):**
 
 - **Event Loop Optimization:** Powered by uvloop, increasing asyncio performance by up to 4x.
 
@@ -23,11 +23,11 @@ The system is built with a focus on low latency, scalability, and asynchronous d
 
 - **Thresholding:** Currently set at a 0.1% test threshold. In production environments, this is adjustable (typically >0.5%) to account for exchange fees and slippage.
 
-4.  **Data Layer (Redis):** 
+4.  **Data Layer (Redis):**
 
 - **Pub/Sub Pattern:** Acts as the central nervous system. The Python engine publishes valid opportunities to a Redis channel, which the Dashboard microservice subscribes to instantly.
 
-5.  **Dashboard (Express + Socket.io):** 
+5.  **Dashboard (Express + Socket.io):**
 
 - **Full-Duplex Communication:** Uses WebSockets (Socket.io) to push data to the client. The frontend remains idle (displaying a "Scanning..." state) until an event is received, ensuring zero wasted resources.
 
@@ -39,7 +39,7 @@ Ensure you have Docker and Docker Compose installed.
 
 ```bash
 # Clone the repository
-git clone https://github.com/Alfa06N/prueba-tecnica-oberstaff.git
+git clone https://github.com/Alfa06N/Arbitrage-Sniper.git
 
 # Launch the entire ecosystem
 sudo docker compose up --build
